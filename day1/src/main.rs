@@ -1,4 +1,5 @@
 use std::{env,fs,process};
+use std::collections::VecDeque;
 
 fn run1(input: &str) -> u32 {
     let mut inc = 0;
@@ -19,7 +20,21 @@ fn run1(input: &str) -> u32 {
 }
 
 fn run2(input: &str) -> u32 {
-    0
+    let mut inc = 0;
+    let mut last: VecDeque<u32> = VecDeque::new();
+    for line in input.lines() {
+        let num = line.parse::<u32>().unwrap();
+        if last.len() == 3 {
+            let sum1: u32 = last.iter().sum();
+            last.pop_front();
+            let sum2 = last.iter().sum::<u32>() + num;
+            if sum1 < sum2 {
+                inc += 1;
+            }
+        }
+        last.push_back(num);
+    }
+    inc
 }
 
 fn main() {
@@ -36,7 +51,7 @@ fn main() {
 
     let input = fs::read_to_string(filepath).unwrap();
 
-    let res = run1(&input);
+    let res = run2(&input);
     println!("{res}");
 }
 
@@ -54,16 +69,16 @@ fn input1() {
     assert_eq!(res,1121);
 }
 
-//#[test]
-//fn example2() {
-    //let input = fs::read_to_string("test.txt").unwrap();
-    //let res = run2(&input);
-    //assert_eq!(res,42);
-//}
+#[test]
+fn example2() {
+    let input = fs::read_to_string("test.txt").unwrap();
+    let res = run2(&input);
+    assert_eq!(res,5);
+}
 
-//#[test]
-//fn input2() {
-    //let input = fs::read_to_string("input.txt").unwrap();
-    //let res = run2(&input);
-    //assert_eq!(res,42);
-//}
+#[test]
+fn input2() {
+    let input = fs::read_to_string("input.txt").unwrap();
+    let res = run2(&input);
+    assert_eq!(res,1065);
+}
