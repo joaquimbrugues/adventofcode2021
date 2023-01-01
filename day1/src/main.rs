@@ -1,7 +1,21 @@
 use std::{env,fs,process};
 
 fn run1(input: &str) -> u32 {
-    0
+    let mut inc = 0;
+    let mut last = None;
+    for line in input.lines() {
+        let num = line.parse::<u32>().unwrap();
+        match last {
+            Some(l) => {
+                if l < num {
+                    inc += 1;
+                }
+            },
+            None => {},
+        }
+        last = Some(num);
+    }
+    inc
 }
 
 fn run2(input: &str) -> u32 {
@@ -30,15 +44,15 @@ fn main() {
 fn example1() {
     let input = fs::read_to_string("test.txt").unwrap();
     let res = run1(&input);
-    assert_eq!(res,42);
+    assert_eq!(res,7);
 }
 
-//#[test]
-//fn input1() {
-    //let input = fs::read_to_string("input.txt").unwrap();
-    //let res = run1(&input);
-    //assert_eq!(res,42);
-//}
+#[test]
+fn input1() {
+    let input = fs::read_to_string("input.txt").unwrap();
+    let res = run1(&input);
+    assert_eq!(res,1121);
+}
 
 //#[test]
 //fn example2() {
