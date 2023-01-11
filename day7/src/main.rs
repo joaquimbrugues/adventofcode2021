@@ -23,8 +23,29 @@ fn run1(input: &str) -> i32 {
     min
 }
 
-fn run2(input: &str) -> u32 {
-    0
+fn run2(input: &str) -> i64 {
+    let mut max = 0;
+    let mut crabs = vec![];
+    for s in input.trim().split(',') {
+        let a = s.parse::<i64>().unwrap();
+        if max < a {
+            max = a;
+        }
+        crabs.push(a);
+    }
+    let mut min : i64 = crabs.iter().sum();
+    min = min * min;
+    for x in 0..max {
+        let mut sum = 0;
+        for crab in crabs.iter() {
+            let a = (x - crab).abs();
+            sum += (a * (a + 1)) / 2;
+        }
+        if min > sum {
+            min = sum;
+        }
+    }
+    min
 }
 
 fn main() {
@@ -41,7 +62,7 @@ fn main() {
 
     let input = fs::read_to_string(filepath).unwrap();
 
-    let res = run1(&input);
+    let res = run2(&input);
     println!("{res}");
 }
 
@@ -59,16 +80,16 @@ fn input1() {
     assert_eq!(res,342641);
 }
 
-//#[test]
-//fn example2() {
-    //let input = fs::read_to_string("test.txt").unwrap();
-    //let res = run2(&input);
-    //assert_eq!(res,42);
-//}
+#[test]
+fn example2() {
+    let input = fs::read_to_string("test.txt").unwrap();
+    let res = run2(&input);
+    assert_eq!(res,168);
+}
 
-//#[test]
-//fn input2() {
-    //let input = fs::read_to_string("input.txt").unwrap();
-    //let res = run2(&input);
-    //assert_eq!(res,42);
-//}
+#[test]
+fn input2() {
+    let input = fs::read_to_string("input.txt").unwrap();
+    let res = run2(&input);
+    assert_eq!(res,93006301);
+}
