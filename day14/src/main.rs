@@ -1,10 +1,10 @@
 use std::{env,fs,process};
 use std::collections::HashMap;
 
-fn run1(input: &str) -> u32 {
+fn run(input: &str, steps: u16) -> u64 {
     // Read input
     let mut lines = input.lines();
-    let mut polymer = lines.next().unwrap().chars().collect::<Vec<_>>();
+    let polymer = lines.next().unwrap().chars().collect::<Vec<_>>();
     lines.next();
     let mut insertions = HashMap::new();
     while let Some(line) = lines.next() {
@@ -14,97 +14,35 @@ fn run1(input: &str) -> u32 {
         insertions.insert((lhs[0],lhs[1]),rhs);
     }
 
-    // Insertions
-    for _ in 0..10 {
-        let mut i = 1;
-        let n = polymer.len() - 1;
-        let mut to_insert = vec![];
-        for (l,r) in polymer[0..n].iter().zip(polymer[1..].iter()) {
-            if let Some(c) = insertions.get(&(*l,*r)) {
-                to_insert.push((i,c));
-            }
-            i += 1;
-        }
-        while let Some((pos,c)) = to_insert.pop() {
-            polymer.insert(pos,*c);
-        }
-    }
-
-    // Count frequencies
+    // NEW IDEA - DFS
     let mut frequencies = HashMap::new();
     for c in polymer.iter() {
-        if let Some(n) = frequencies.get_mut(&c) {
-            *n += 1;
+        if let Some(k) = frequencies.get_mut(c) {
+            *k += 1;
         } else {
-            frequencies.insert(c,1);
+            frequencies.insert(*c,1);
         }
     }
-    let mut min = polymer.len() as u32;
-    let mut max = 0;
-    for v in frequencies.values() {
-        if min > *v {
-            min = *v;
-        }
-        if max < *v {
-            max = *v;
-        }
+    for (l,r) in polymer[0..(polymer.len()-1)].iter().zip(polymer[1..].iter()) {
+        dfs(*l,*r,&insertions, steps, &mut frequencies,);
     }
-    max - min
+
+    println!("{frequencies:?}");
+    frequencies.values().max().unwrap() - frequencies.values().min().unwrap()
 }
 
-fn run2(input: &str) -> u64 {
-    // Read input
-    let mut lines = input.lines();
-    let mut polymer = lines.next().unwrap().chars().collect::<Vec<_>>();
-    lines.next();
-    let mut insertions = HashMap::new();
-    while let Some(line) = lines.next() {
-        let parts = line.split("->").map(|s| s.trim()).collect::<Vec<_>>();
-        let lhs = parts[0].chars().collect::<Vec<_>>();
-        let rhs = parts[1].chars().next().unwrap();
-        insertions.insert((lhs[0],lhs[1]),rhs);
-    }
-
-    // Insertions
-    // TODO: Implement some kind of search for patterns - perhaps we can save partial insertions
-    // and reuse them to more efficiently do this step (otherwise this will explode in
-    // combinatorics...)
-    for step in 0..40 {
-        println!("{step}: {}", polymer.len());
-        let mut i = 1;
-        let n = polymer.len() - 1;
-        let mut to_insert = vec![];
-        for (l,r) in polymer[0..n].iter().zip(polymer[1..].iter()) {
-            if let Some(c) = insertions.get(&(*l,*r)) {
-                to_insert.push((i,c));
-            }
-            i += 1;
+fn dfs(left: char, right: char, insertions: &HashMap<(char,char),char>, rem_steps: u16, frequencies: &mut HashMap<char, u64>) {
+    if let Some(c) = insertions.get(&(left,right)) {
+        if rem_steps > 1 {
+            dfs(left,*c,insertions,rem_steps - 1, frequencies);
+            dfs(*c,right,insertions,rem_steps - 1, frequencies);
         }
-        while let Some((pos,c)) = to_insert.pop() {
-            polymer.insert(pos,*c);
-        }
-    }
-
-    // Count frequencies
-    let mut frequencies = HashMap::new();
-    for c in polymer.iter() {
-        if let Some(n) = frequencies.get_mut(&c) {
-            *n += 1;
+        if let Some(k) = frequencies.get_mut(c) {
+            *k += 1;
         } else {
-            frequencies.insert(c,1);
+            frequencies.insert(*c,1);
         }
     }
-    let mut min = polymer.len() as u64;
-    let mut max = 0;
-    for v in frequencies.values() {
-        if min > *v {
-            min = *v;
-        }
-        if max < *v {
-            max = *v;
-        }
-    }
-    max - min
 }
 
 fn main() {
@@ -121,28 +59,28 @@ fn main() {
 
     let input = fs::read_to_string(filepath).unwrap();
 
-    let res = run2(&input);
+    let res = run(&input,2);
     println!("{res}");
 }
 
 #[test]
 fn example1() {
     let input = fs::read_to_string("test.txt").unwrap();
-    let res = run1(&input);
+    let res = run(&input,10);
     assert_eq!(res,1588);
 }
 
 #[test]
 fn input1() {
     let input = fs::read_to_string("input.txt").unwrap();
-    let res = run1(&input);
+    let res = run(&input,10);
     assert_eq!(res,3306);
 }
 
 #[test]
 fn example2() {
     let input = fs::read_to_string("test.txt").unwrap();
-    let res = run2(&input);
+    let res = run(&input,40);
     assert_eq!(res,2188189693529);
 }
 
