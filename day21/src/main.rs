@@ -1,10 +1,6 @@
 use std::{env,fs,process};
 use std::collections::HashMap;
 
-//trait Die {
-    //fn roll(&mut self) -> u64
-//}
-
 struct DeterministicDie {
     counter: u64,
     face: u64,
